@@ -998,6 +998,13 @@
   }
   syncBackendData();
 
+  function openStyleModal() {
+    document.getElementById('style-modal').classList.add('active');
+  }
+  function closeStyleModal() {
+    document.getElementById('style-modal').classList.remove('active');
+  }
+
   let selectedStyleId = null;
 
   function selectStyle(id) {
