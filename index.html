@@ -202,7 +202,7 @@
     background: rgba(10,10,10,0.88); backdrop-filter: blur(24px);
     align-items: center; justify-content: center; padding: 2rem;
   }
-  .modal-overlay.open { display: flex; }
+  .modal-overlay.active { display: flex; }
   .modal {
     background: #141414; border: 1px solid var(--border);
     border-radius: 20px; width: 100%; max-width: 900px;
@@ -255,7 +255,7 @@
     border-radius: 18px; padding: 2.25rem; margin-top: 2.5rem; display: none;
     animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  .insight-panel.open { display: block; }
+  .insight-panel.active { display: block; }
   .insight-tag { 
     font-size: 0.65rem; font-weight: 600; text-transform: uppercase; 
     color: var(--gold-light); margin-bottom: 1rem; display: block; letter-spacing: 0.15em;
@@ -388,7 +388,7 @@
   /* Budget slider */
   .budget-row { display: flex; align-items: center; gap: 1.5rem; }
   .budget-slider {
-    flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px;
+    flex: 1; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px;
     background: rgba(255,255,255,0.08); outline: none;
   }
   .budget-slider::-webkit-slider-thumb {
@@ -984,16 +984,38 @@
   let culturalStyles = {};
   let cultureThemeMap = {};
 
+  // Fallback data in case backend is offline
+  const FALLBACK_CULTURAL_DATA = {
+    west_bengal: { insight: "Bengali homes often feature high ceilings and red-oxide floors to stay cool.", materials: "Terracotta, Teak, Red Oxide", colors: "Sindoor Red, Off-white", furniture: "Four-poster beds (Chowki), Rocking chairs", decor: "Alpona patterns, Brass lamps" },
+    rajasthan: { insight: "Jharokha-style windows and marble jaalis provide both luxury and ventilation.", materials: "Marble, Sandstone, Camel bone inlay", colors: "Royal Blue, Marigold Orange", furniture: "Ornate carved cabinets, Jhoola (swings)", decor: "Blue pottery, Pichwai paintings" },
+    kerala: { insight: "Nalukettu architecture uses central courtyards for natural light and breeze.", materials: "Laterite stone, Teak, Rosewood", colors: "Terracotta Red, Coconut Brown", furniture: "Easy chairs (Charupady), Wooden chests", decor: "Brass Uruli, Kathakali masks" },
+    tamil_nadu: { insight: "Athangudi tiles are eco-friendly and get smoother with age.", materials: "Athangudi Tiles, Granite, Silk", colors: "Deep Vermillion, Turmeric Yellow", furniture: "Thinnai (veranda seating), Rosewood pillars", decor: "Thanjavur paintings, Bronze bells" },
+    punjab: { insight: "Phulkari patterns add vibrant storytelling to contemporary interiors.", materials: "Cotton, Brass, Phulkari fabric", colors: "Lush Green, Mustard Yellow", furniture: "Charpai (woven beds), Low stools (Peera)", decor: "Brass Lassi glasses, Hand-woven rugs" },
+    maharashtra: { insight: "Wada architecture uses massive timber frames for earthquake resistance.", materials: "Teak, Stone, Cotton", colors: "Saffron, Earthy Ochre", furniture: "Folding wooden tables, Diwans", decor: "Warli art, Paithani silk accents" },
+    gujarat: { insight: "Lippan art uses mirrors and mud to reflect light and keep rooms cool.", materials: "Mirror work, Mud, Hand-printed fabric", colors: "Peacock Blue, Bandhani Red", furniture: "Sankheda furniture, Patola cushions", decor: "Lippan wall art, Copper bells" },
+    kashmir: { insight: "Pinjrakari woodcraft provides privacy while letting soft light filter through.", materials: "Walnut wood, Wool, Chinar leaves", colors: "Saffron Red, Willow Green", furniture: "Carved walnut coffee tables, Khatamband ceilings", decor: "Pashmina throws, Copper Samovars" },
+    assam: { insight: "Bamboo structures are lightweight and highly resilient to frequent rain.", materials: "Bamboo, Cane, Water Hyacinth", colors: "Leaf Green, Natural Straw", furniture: "Cane armchairs, Bamboo dividers", decor: "Assamese Jaapi, Bell metal crafts" }
+  };
+
+  const FALLBACK_THEME_MAP = {
+    west_bengal: { gold: "#b91c1c", goldLight: "#fef2f2", hero: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200" },
+    rajasthan: { gold: "#1e40af", goldLight: "#eff6ff", hero: "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=1200" },
+    kerala: { gold: "#78350f", goldLight: "#fef3c7", hero: "https://images.unsplash.com/photo-1600607687940-c52af0a4372c?auto=format&fit=crop&q=80&w=1200" },
+    kashmir: { gold: "#065f46", goldLight: "#ecfdf5", hero: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=1200" }
+  };
+
   async function syncBackendData() {
     try {
-      // Fetch from backend (Relative path for Vercel)
       const resp = await fetch('/api/cultural-data');
+      if (!resp.ok) throw new Error("Backend unavailable");
       const data = await resp.json();
-      culturalStyles = data.styles;
-      cultureThemeMap = data.themes;
+      culturalStyles = data.culturalStyles || data.styles;
+      cultureThemeMap = data.cultureThemeMap || data.themes;
       console.log("✅ Backend Data Synced");
-    } catch (err) {
-      console.error("❌ Backend Offline", err);
+    } catch(err) {
+      console.warn("⚠️ Using local heritage fallback data:", err.message);
+      culturalStyles = FALLBACK_CULTURAL_DATA;
+      cultureThemeMap = FALLBACK_THEME_MAP;
     }
   }
   syncBackendData();
@@ -1011,20 +1033,20 @@
     document.querySelectorAll('.explore-card').forEach(c => c.classList.remove('active'));
     document.querySelector(`[onclick="selectStyle('${id}')"]`).classList.add('active');
     selectedStyleId = id;
-    document.getElementById('insight-panel').classList.remove('open');
+    document.getElementById('insight-panel').classList.remove('active');
     document.getElementById('state-selector').value = "";
   }
 
   function handleStateChange(val) {
     if (!val) {
-      document.getElementById('insight-panel').classList.remove('open');
+      document.getElementById('insight-panel').classList.remove('active');
       return;
     }
     const data = culturalStyles[val];
     selectedStyleId = val;
 
     document.querySelectorAll('.explore-card').forEach(c => c.classList.remove('active'));
-    document.getElementById('insight-panel').classList.add('open');
+    document.getElementById('insight-panel').classList.add('active');
     document.getElementById('insight-text').innerText = `“${data.insight}”`;
     document.getElementById('attr-materials').innerText = data.materials;
     document.getElementById('attr-colors').innerText = data.colors;
