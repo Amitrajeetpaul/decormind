@@ -935,6 +935,28 @@
     });
   };
 
+  document.getElementById('to-design-btn').onclick = () => {
+    document.getElementById('design-section').style.display = 'block';
+    document.getElementById('design-section').scrollIntoView({behavior:'smooth'});
+  };
+
+  document.getElementById('generate-trigger').onclick = () => {
+    showLoading("Generating your AI sanctuary...", 3000, () => {
+      document.getElementById('results-section').style.display = 'block';
+      document.getElementById('results-section').scrollIntoView({behavior:'smooth'});
+    });
+  };
+
+  document.getElementById('voice-trigger').onclick = function() {
+    this.classList.toggle('listening');
+    const display = document.getElementById('voice-display');
+    if(this.classList.contains('listening')) {
+      display.innerText = "Listening for design commands...";
+    } else {
+      display.innerText = "“Add more green plants near the window...”";
+    }
+  };
+
   async function runAIAnalysis() {
     try {
       // Fetch scores from backend (Relative path for Vercel)
