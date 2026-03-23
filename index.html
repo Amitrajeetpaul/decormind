@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DecorMind — AI Interior Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #0a0a0a;
+    --card-bg: #1a1a1a;
+    --cream: #f0e6d3;
+    --gold: #c9a96e;
+    --gold-light: #e8d5b0;
+    --white: #f5f0eb;
+    --muted: #8a8580;
+    --border: rgba(255,255,255,0.08);
+    --glass: rgba(255,255,255,0.04);
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grain {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 999; opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat; background-size: 128px;
+  }
+
+  /* ======== NAVBAR ======== */
+  .navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 3rem;
+    backdrop-filter: blur(20px);
+    background: rgba(10,10,10,0.6);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem; font-weight: 500; color: var(--cream);
+    display: flex; align-items: center; gap: 0.75rem; cursor: pointer;
+  }
+  .nav-logo-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; color: var(--black); font-weight: 700;
+  }
+  .nav-center { display: flex; align-items: center; gap: 2.5rem; }
+  .nav-link {
+    font-size: 0.85rem; font-weight: 400; color: var(--muted);
+    text-decoration: none; letter-spacing: 0.06em; text-transform: uppercase;
+    transition: color 0.3s; cursor: pointer;
+  }
+  .nav-link:hover { color: var(--cream); }
+  .nav-divider { width: 40px; height: 1px; background: var(--border); }
+  .nav-cta {
+    font-size: 0.8rem; font-weight: 500; color: var(--black);
+    background: var(--cream); padding: 0.6rem 1.5rem; border-radius: 50px;
+    text-decoration: none; letter-spacing: 0.04em; text-transform: uppercase;
+    border: 1px solid var(--cream); cursor: pointer; transition: all 0.3s;
+  }
+  .nav-cta:hover { background: transparent; color: var(--cream); }
+
+  /* ======== SECTIONS ======== */
+  section { padding: 6rem 3rem; max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+  .section-label {
+    font-size: 0.7rem; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--gold); margin-bottom: 0.5rem;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem); font-weight: 400; color: var(--white);
+    margin-bottom: 1rem; line-height: 1.1;
+  }
+  .section-title em { font-style: italic; color: var(--gold-light); }
+  .section-sub { font-size: 0.95rem; color: var(--muted); max-width: 600px; line-height: 1.6; margin-bottom: 2.5rem; }
+
+  /* ======== HERO ======== */
+  .hero {
+    position: relative; min-height: 100vh; overflow: hidden;
+    padding-top: 0;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -20%; right: -10%;
+    width: 60%; height: 70%;
+    background: radial-gradient(ellipse, rgba(90,80,40,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: -10%; left: -5%;
+    width: 40%; height: 50%;
+    background: radial-gradient(ellipse, rgba(60,70,40,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative; z-index: 1; max-width: 1400px; margin: 0 auto;
+    padding: 6rem 3rem 4rem;
+    display: grid; grid-template-columns: 1fr 0.55fr;
+    gap: 3rem; align-items: flex-start; min-height: 100vh;
+  }
+  .hero-left { display: flex; flex-direction: column; gap: 0.5rem; }
+  .hero-tags { display: flex; gap: 0.5rem; align-items: center; animation: fadeUp 0.8s ease both 0.1s; }
+  .tag {
+    font-size: 0.75rem; font-weight: 500; padding: 0.4rem 1rem;
+    border-radius: 50px; background: var(--glass);
+    border: 1px solid var(--border); color: var(--muted);
+  }
+  .tag-dot { font-size: 0.7rem; color: var(--muted); }
+  .hero-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3.5rem, 7.5vw, 6.5rem);
+    font-weight: 400; line-height: 0.95; letter-spacing: -0.03em;
+    color: var(--white); animation: fadeUp 0.8s ease both 0.25s;
+  }
+  .hero-headline em { font-style: italic; color: var(--gold-light); }
+  .hero-bottom {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 2rem; margin-top: 3.5rem; animation: fadeUp 0.8s ease both 0.45s;
+  }
+  .hero-subtext { max-width: 240px; }
+  .hero-subtext p { font-size: 1.05rem; font-weight: 300; line-height: 1.5; color: var(--muted); margin-bottom: 1.5rem; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 0.75rem;
+    font-size: 0.9rem; font-weight: 500; color: var(--black);
+    background: var(--cream); padding: 0.85rem 1.8rem;
+    border-radius: 50px; text-decoration: none; border: 1px solid var(--cream);
+    transition: all 0.35s; cursor: pointer; font-family: inherit;
+  }
+  .btn-primary:hover { background: transparent; color: var(--cream); }
+  .btn-primary svg { width: 16px; height: 16px; transition: transform 0.3s; }
+  .btn-primary:hover svg { transform: translateX(4px); }
+
+  .hero-image { width: 100%; aspect-ratio: 4/3; border-radius: 16px; overflow: hidden; background: var(--card-bg); border: 1px solid var(--border); }
+  .hero-image img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.92; }
+
+  .hero-right { display: flex; flex-direction: column; gap: 1.25rem; animation: fadeUp 0.8s ease both 0.55s; }
+  .stat-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem; position: relative; overflow: hidden;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .stat-card:hover { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(201,169,110,0.1); }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,169,110,0.3), transparent);
+  }
+  .stat-card-label {
+    font-size: 0.7rem; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--muted); padding: 0.3rem 0.8rem;
+    border: 1px solid var(--border); border-radius: 50px; display: inline-block; margin-bottom: 1rem;
+  }
+  .stat-card-visual { width: 100%; height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+  .lamp { width: 60px; height: 60px; background: radial-gradient(circle at 40% 35%, #d4b896, #8a7560 60%, #5a4a3a); border-radius: 50%; position: relative; box-shadow: 0 0 40px rgba(201,169,110,0.15); }
+  .lamp-arm { position: absolute; top: -30px; left: 50%; width: 2px; height: 35px; background: var(--muted); transform: rotate(15deg); transform-origin: bottom center; }
+  .lamp-arm::after { content: ''; position: absolute; top: -4px; left: -8px; width: 18px; height: 4px; background: var(--muted); border-radius: 2px; }
+  .stat-number { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 500; color: var(--white); line-height: 1; }
+  .stat-number .plus { font-size: 1.2rem; color: var(--gold); }
+  .stat-number .suffix { font-size: 1.8rem; color: var(--gold); }
+  .stat-desc { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+
+  .style-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .style-card:hover { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(201,169,110,0.1); }
+  .style-dots { display: flex; gap: 0.35rem; }
+  .style-dot { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); cursor: pointer; transition: all 0.3s; }
+  .style-dot:hover { transform: scale(1.2); border-color: var(--gold); box-shadow: 0 0 12px rgba(201,169,110,0.3); }
+  .style-dot.active { border-color: var(--cream); border-width: 2.5px; transform: scale(1.15); box-shadow: 0 0 15px rgba(201,169,110,0.4); }
+  .style-card-text strong { font-size: 0.95rem; font-weight: 600; color: var(--cream); display: block; }
+  .style-card-text span { font-size: 0.72rem; color: var(--muted); }
+
+  .feature-strip {
+    position: relative; z-index: 1; display: flex; justify-content: center;
+    gap: 3rem; padding: 2rem 3rem; border-top: 1px solid var(--border);
+    animation: fadeUp 0.8s ease both 0.7s;
+  }
+  .feature-item { display: flex; align-items: center; gap: 0.6rem; font-size: 0.8rem; color: var(--muted); }
+  .feature-icon {
+    width: 32px; height: 32px; border-radius: 8px; background: var(--glass);
+    border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; color: var(--gold);
+  }
+
+  /* ======== STYLE EXPLORER MODAL ======== */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: rgba(10,10,10,0.88); backdrop-filter: blur(24px);
+    align-items: center; justify-content: center; padding: 2rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #141414; border: 1px solid var(--border);
+    border-radius: 20px; width: 100%; max-width: 900px;
+    max-height: 85vh; overflow-y: auto; position: relative;
+    animation: fadeUp 0.4s ease;
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.5rem 2rem; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: #141414; z-index: 5;
+  }
+  .modal-header h2 {
+    font-family: 'Playfair Display', serif; font-size: 1.5rem;
+    font-weight: 400; color: var(--white);
+  }
+  .modal-header h2 em { font-style: italic; color: var(--gold-light); }
+  .modal-close {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--glass);
+    color: var(--muted); font-size: 1.1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+  }
+  .modal-close:hover { border-color: var(--cream); color: var(--cream); }
+  .modal-body { padding: 1.5rem 2rem 2rem; }
+  /* Culture Selection Sections */
+  .modal-section-title { 
+    font-size: 0.75rem; font-weight: 500; color: var(--gold); 
+    text-transform: uppercase; margin: 2.5rem 0 1.25rem; letter-spacing: 0.12em; 
+  }
+  .modal-section-title:first-child { margin-top: 0; }
+  
+  .state-select-wrap { margin-bottom: 2.5rem; position: relative; }
+  .state-select {
+    width: 100%; padding: 1.25rem; border-radius: 12px; background: var(--glass);
+    border: 1px solid var(--border); color: var(--white); font-family: inherit;
+    font-size: 0.95rem; appearance: none; outline: none; cursor: pointer;
+    transition: all 0.3s;
+  }
+  .state-select:hover { border-color: rgba(255,255,255,0.2); }
+  .state-select:focus { border-color: var(--gold); background: rgba(201,169,110,0.05); }
+  .state-select option { background-color: #1a1b1e; color: #ffffff; padding: 1rem; }
+  .state-select-wrap::after {
+    content: '▼'; position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%);
+    pointer-events: none; color: var(--gold); font-size: 0.7rem;
+  }
+
+  .insight-panel {
+    background: rgba(201,169,110,0.06); border: 1px solid rgba(201,169,110,0.12);
+    border-radius: 18px; padding: 2.25rem; margin-top: 2.5rem; display: none;
+    animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .insight-panel.open { display: block; }
+  .insight-tag { 
+    font-size: 0.65rem; font-weight: 600; text-transform: uppercase; 
+    color: var(--gold-light); margin-bottom: 1rem; display: block; letter-spacing: 0.15em;
+  }
+  .insight-text { 
+    font-family: 'Playfair Display', serif; font-size: 1.1rem; 
+    color: var(--cream); line-height: 1.6; font-style: italic; margin-bottom: 2rem; 
+  }
+
+  .attr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.75rem; }
+  .attr-item { display: flex; align-items: flex-start; gap: 1rem; }
+  .attr-icon { font-size: 1.4rem; filter: grayscale(0.2); }
+  .attr-info h5 { 
+    font-family: 'Playfair Display', serif; font-size: 0.8rem; 
+    color: var(--gold); text-transform: uppercase; margin-bottom: 0.25rem; letter-spacing: 0.05em;
+  }
+  .attr-info p { font-size: 0.9rem; color: var(--white); font-weight: 400; opacity: 0.9; }
+
+  .explore-apply {
+    display: block; width: 100%; margin-top: 2.5rem; padding: 1.15rem;
+    border-radius: 14px; background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--black); font-size: 1rem; font-weight: 600;
+    border: none; cursor: pointer; font-family: inherit;
+    transition: all 0.3s; letter-spacing: 0.04em; margin-bottom: 1rem;
+  }
+  .explore-apply:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(201,169,110,0.3); }
+
+  @media (max-width: 700px) {
+    .explore-grid { grid-template-columns: 1fr; }
+    .modal { margin: 1rem; }
+  }
+  #upload-section { border-top: 1px solid var(--border); }
+  .upload-zone {
+    border: 2px dashed rgba(255,255,255,0.12); border-radius: 20px;
+    padding: 4rem 2rem; text-align: center; cursor: pointer;
+    transition: all 0.3s; background: var(--glass); position: relative;
+  }
+  .upload-zone:hover { border-color: var(--gold); background: rgba(201,169,110,0.04); }
+  .upload-zone.active { border-color: var(--green); background: rgba(74,222,128,0.04); }
+  .upload-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+  .upload-zone h3 { font-size: 1.1rem; color: var(--cream); margin-bottom: 0.5rem; }
+  .upload-zone p { font-size: 0.82rem; color: var(--muted); }
+  #file-input { display: none; }
+  #preview-container { display: none; margin-top: 2rem; }
+  #preview-img { max-width: 100%; max-height: 400px; border-radius: 16px; border: 1px solid var(--border); }
+
+  /* ======== ROOM ANALYSIS ======== */
+  #analysis-section { display: none; border-top: 1px solid var(--border); }
+  .analysis-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .analysis-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; position: relative; overflow: hidden;
+    transition: transform 0.3s;
+  }
+  .analysis-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+  .analysis-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--gold); opacity: 0.6;
+  }
+  .analysis-card-icon { font-size: 1.5rem; margin-bottom: 0.8rem; }
+  .analysis-card h4 { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.1em; }
+  .analysis-score { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 500; color: var(--white); }
+  .analysis-detail { font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+  .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 0.8rem; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: var(--gold); border-radius: 2px; transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+  /* Suggestion boxes */
+  .suggestions-box { margin-top: 2rem; }
+  .suggestion-tag { font-size: 0.7rem; font-weight: 500; color: var(--gold); text-transform: uppercase; margin-bottom: 0.8rem; display: block; }
+  .issues-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .issue-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    background: var(--glass); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.25rem; font-size: 0.85rem; color: var(--cream);
+    animation: fadeUp 0.6s ease both;
+  }
+  .issue-icon { font-size: 1.1rem; }
+
+  /* ======== VASTU SECTION ======== */
+  #vastu-section { display: none; border-top: 1px solid var(--border); }
+  .vastu-score-ring {
+    width: 160px; height: 160px; border-radius: 50%;
+    background: conic-gradient(var(--gold) 0deg, var(--gold) 0deg, rgba(255,255,255,0.06) 0deg);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 2rem; position: relative; transition: background 2s ease;
+  }
+  .vastu-score-inner {
+    width: 130px; height: 130px; border-radius: 50%; background: var(--black);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .vastu-score-num { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 500; color: var(--white); }
+  .vastu-score-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .vastu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+  .vastu-item {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.2rem;
+    display: flex; align-items: flex-start; gap: 0.75rem;
+  }
+  .vastu-status { font-size: 1.2rem; margin-top: 0.1rem; }
+  .vastu-item h4 { font-size: 0.85rem; color: var(--cream); margin-bottom: 0.2rem; }
+  .vastu-item p { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+
+  /* ======== STYLE + MOOD + BUDGET ======== */
+  #design-section { display: none; border-top: 1px solid var(--border); }
+  .design-controls { display: flex; flex-direction: column; gap: 2.5rem; }
+
+  /* Style Grid */
+  .style-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
+  .style-option {
+    background: var(--card-bg); border: 2px solid var(--border);
+    border-radius: 12px; padding: 1.2rem 0.8rem; text-align: center;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .style-option:hover { border-color: rgba(255,255,255,0.15); }
+  .style-option.selected { border-color: var(--gold); background: rgba(201,169,110,0.08); }
+  .style-option-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  .style-option-name { font-size: 0.78rem; font-weight: 500; color: var(--cream); }
+
+  /* Mood pills */
+  .mood-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .mood-pill {
+    padding: 0.55rem 1.3rem; border-radius: 50px;
+    border: 1px solid var(--border); background: var(--glass);
+    color: var(--muted); font-size: 0.82rem; cursor: pointer;
+    transition: all 0.3s; font-family: inherit;
+  }
+  .mood-pill:hover { border-color: rgba(255,255,255,0.15); color: var(--cream); }
+  .mood-pill.selected { border-color: var(--gold); background: rgba(201,169,110,0.1); color: var(--gold-light); }
+
+  /* Budget slider */
+  .budget-row { display: flex; align-items: center; gap: 1.5rem; }
+  .budget-slider {
+    flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,0.08); outline: none;
+  }
+  .budget-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--gold); cursor: pointer; border: 2px solid var(--black);
+  }
+  .budget-value {
+    font-family: 'Playfair Display', serif; font-size: 1.8rem;
+    font-weight: 500; color: var(--gold-light); min-width: 120px; text-align: right;
+  }
+
+  /* Progressive slider */
+  .progressive-row { display: flex; align-items: center; gap: 1rem; }
+  .progressive-label { font-size: 0.82rem; color: var(--muted); min-width: 200px; }
+
+  /* Voice button */
+  .voice-btn {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    padding: 0.7rem 1.4rem; border-radius: 50px;
+    border: 1px solid var(--border); background: var(--glass);
+    color: var(--cream); font-size: 0.85rem; cursor: pointer;
+    transition: all 0.3s; font-family: inherit;
+  }
+  .voice-btn:hover { border-color: var(--gold); }
+  .voice-btn.listening { border-color: var(--red); background: rgba(248,113,113,0.08); color: var(--red); animation: pulse 1.5s infinite; }
+  .voice-text { font-size: 0.82rem; color: var(--muted); margin-top: 0.5rem; min-height: 1.2rem; font-style: italic; }
+
+  /* Generate button */
+  .generate-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem;
+    width: 100%; padding: 1.1rem; border-radius: 14px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--black); font-size: 1rem; font-weight: 600;
+    border: none; cursor: pointer; font-family: inherit;
+    transition: all 0.3s; letter-spacing: 0.02em;
+  }
+  .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(201,169,110,0.25); }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ======== RESULTS ======== */
+  #results-section { display: none; border-top: 1px solid var(--border); }
+  .results-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .result-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; cursor: pointer; transition: all 0.3s;
+  }
+  .result-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+  .result-card img { width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block; }
+  .result-card-info { padding: 1rem; }
+  .result-card-info h4 { font-size: 0.9rem; color: var(--cream); margin-bottom: 0.2rem; }
+  .result-card-info p { font-size: 0.75rem; color: var(--muted); }
+
+  .explore-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;
+  }
+  .explore-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; cursor: pointer;
+    transition: all 0.3s; position: relative;
+  }
+  .explore-card:hover { border-color: var(--gold); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(201,169,110,0.12); }
+  .explore-card.active { border-color: var(--gold); border-width: 2px; }
+  .explore-card-img {
+    width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;
+    transition: transform 0.5s;
+  }
+  .explore-card:hover .explore-card-img { transform: scale(1.05); }
+  .explore-card-img-wrap { overflow: hidden; margin-bottom: 1.25rem; }
+  .explore-card-info { padding: 0 1.5rem 1.5rem; }
+  .explore-card-info h4 { font-size: 0.95rem; color: var(--cream); margin-bottom: 0.5rem; }
+  .explore-card-info p { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+
+  /* Plan Switcher */
+  .plan-switcher { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+  .plan-btn {
+    padding: 0.7rem 1.4rem; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--glass); color: var(--muted); cursor: pointer; transition: all 0.3s;
+    font-family: inherit; font-size: 0.85rem; font-weight: 500;
+  }
+  .plan-btn:hover { border-color: var(--gold); color: var(--gold-light); }
+  .plan-btn.active { background: var(--gold); color: var(--black); border-color: var(--gold); }
+
+  .vastu-badge {
+    position: absolute; top: 1.5rem; right: 1.5rem; z-index: 20;
+    padding: 0.5rem 1rem; border-radius: 50px; background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(10px); color: var(--green); font-weight: 600;
+    border: 1px solid rgba(74,222,128,0.3); font-size: 0.9rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+
+  /* Results section cards */
+  .result-image-wrap { position: relative; width: 100%; aspect-ratio: 16/9; border-radius: 16px; overflow: hidden; margin-bottom: 2.5rem; border: 1px solid var(--border); }
+  .result-image-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Before/After slider */
+  .compare-container {
+    position: absolute; inset: 0; z-index: 10;
+    cursor: ew-resize; display: none;
+  }
+  .compare-before, .compare-after {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  }
+  .compare-before img, .compare-after img { width: 100%; height: 100%; object-fit: cover; }
+  .compare-before { clip-path: inset(0 50% 0 0); transition: clip-path 0.05s; }
+  .compare-divider {
+    position: absolute; top: 0; bottom: 0; left: 50%; width: 3px;
+    background: var(--cream); z-index: 10; transform: translateX(-50%);
+    transition: left 0.05s;
+  }
+  .compare-handle {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 40px; height: 40px; border-radius: 50%; background: var(--cream);
+    z-index: 11; display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; color: var(--black); font-weight: 700;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  }
+  .compare-label {
+    position: absolute; bottom: 1rem; padding: 0.3rem 0.8rem;
+    border-radius: 50px; font-size: 0.7rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.06em; z-index: 5;
+  }
+  .compare-label.before { left: 1rem; background: rgba(0,0,0,0.6); color: var(--white); }
+  .compare-label.after { right: 1rem; background: rgba(201,169,110,0.8); color: var(--black); }
+
+  /* Cost breakdown */
+  .cost-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem;
+  }
+  .cost-card h3 { font-size: 1rem; color: var(--cream); margin-bottom: 1rem; }
+  .cost-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .cost-row:last-child { border: none; }
+  .cost-row .label { color: var(--muted); }
+  .cost-row .price { color: var(--cream); font-weight: 500; }
+  .cost-total { display: flex; justify-content: space-between; padding: 0.8rem 0; margin-top: 0.5rem; border-top: 2px solid var(--gold); }
+  .cost-total .label { color: var(--cream); font-weight: 600; font-size: 0.95rem; }
+  .cost-total .price { color: var(--green); font-weight: 600; font-size: 1.1rem; font-family: 'Playfair Display', serif; }
+  .budget-badge {
+    display: inline-block; padding: 0.3rem 0.8rem; border-radius: 50px;
+    font-size: 0.72rem; font-weight: 500; margin-top: 0.5rem;
+  }
+  .budget-badge.within { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+
+  /* Shop This Look */
+  .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+  .shop-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem; transition: all 0.3s; cursor: pointer;
+  }
+  .shop-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+  .shop-card-img { width: 100%; aspect-ratio: 1; border-radius: 8px; background: rgba(255,255,255,0.03); margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
+  .shop-card h4 { font-size: 0.82rem; color: var(--cream); margin-bottom: 0.15rem; }
+  .shop-card .shop-price { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gold-light); }
+  .shop-card .shop-source { font-size: 0.68rem; color: var(--muted); margin-top: 0.2rem; }
+  .shop-btn {
+    display: inline-block; margin-top: 0.6rem; padding: 0.35rem 0.9rem;
+    border-radius: 50px; font-size: 0.7rem; font-weight: 500;
+    background: rgba(201,169,110,0.1); color: var(--gold); border: 1px solid rgba(201,169,110,0.2);
+    text-decoration: none;
+  }
+
+  /* ======== LOADING OVERLAY ======== */
+  .loading-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(10,10,10,0.92); backdrop-filter: blur(20px);
+    flex-direction: column; align-items: center; justify-content: center;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 2px solid var(--border);
+    border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 1s linear infinite; margin-bottom: 2rem;
+  }
+  .loading-text {
+    font-family: 'Playfair Display', serif; font-size: 1.3rem;
+    color: var(--cream); text-align: center;
+  }
+  .loading-sub { font-size: 0.82rem; color: var(--muted); margin-top: 0.5rem; }
+
+  /* ======== ANIMATIONS ======== */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+  .fade-in { animation: fadeUp 0.6s ease both; }
+
+  /* ======== RESPONSIVE ======== */
+  @media (max-width: 900px) {
+    .hero-inner { grid-template-columns: 1fr; padding: 8rem 1.5rem 3rem; }
+    .hero-right { flex-direction: row; }
+    .navbar { padding: 1rem 1.5rem; }
+    .nav-center { display: none; }
+    .hero-headline { font-size: clamp(2.8rem, 10vw, 4.5rem); }
+    .feature-strip { flex-wrap: wrap; gap: 1.5rem; }
+    section { padding: 4rem 1.5rem; }
+    .style-grid { grid-template-columns: repeat(2, 1fr); }
+    .results-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loading-text">Rearranging furniture...</div>
+  <div class="loading-sub" id="loading-sub">This usually takes 15-30 seconds</div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-logo" onclick="scrollTo(0,0)"><div class="nav-logo-icon">D</div> DecorMind</div>
+  <div class="nav-center">
+    <span class="nav-link" onclick="document.getElementById('upload-section').scrollIntoView({behavior:'smooth'})">Features</span>
+    <div class="nav-divider"></div>
+    <span class="nav-link" onclick="document.getElementById('design-section').scrollIntoView({behavior:'smooth'})">Pricing</span>
+  </div>
+  <span class="nav-cta" onclick="document.getElementById('upload-section').scrollIntoView({behavior:'smooth'})">Get App</span>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-tags"><span class="tag">AI</span><span class="tag">Interior Design</span><span class="tag-dot">✦</span></div>
+      <h1 class="hero-headline">Shape Your<br><em>Dream</em> Space</h1>
+      <div class="hero-bottom">
+        <div class="hero-subtext">
+          <p>Begin Turning<br>Dreams into<br>Reality</p>
+          <button class="btn-primary" onclick="document.getElementById('upload-section').scrollIntoView({behavior:'smooth'})">
+            Get Started <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10m-4-4 4 4-4 4"/></svg>
+          </button>
+        </div>
+        <div class="hero-image"><img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&q=80&w=1200" alt="Interior"></div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="stat-card" onclick="openStyleModal()">
+        <span class="stat-card-label">AI STYLES</span>
+        <div class="stat-card-visual">
+          <div class="lamp"><div class="lamp-arm"></div></div>
+        </div>
+        <div class="stat-number">+8<span class="suffix">+</span></div>
+        <div class="stat-desc">Cultural design presets — Click to explore</div>
+      </div>
+      <div class="style-card" onclick="document.getElementById('vastu-section').scrollIntoView({behavior:'smooth'})">
+        <div class="style-dots">
+          <div class="style-dot" style="background: #a67c52;"></div>
+          <div class="style-dot" style="background: #d4b896;"></div>
+          <div class="style-dot" style="background: #f0e6d3;"></div>
+          <div class="style-dot active" style="background: #6b8e8e;"></div>
+        </div>
+        <div class="style-card-text">
+          <strong>Vastu Compliant</strong>
+          <span>Earthy Brown — grounding energy</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="feature-strip">
+  <div class="feature-item"><div class="feature-icon">✨</div> Photorealistic AI</div>
+  <div class="feature-item"><div class="feature-icon">🏠</div> Instant Preview</div>
+  <div class="feature-item"><div class="feature-icon">🛋️</div> Smart Furniture</div>
+  <div class="feature-item"><div class="feature-icon">🪷</div> Vastu Experts</div>
+</div>
+
+<section id="upload-section">
+  <div class="section-label">Get Started</div>
+  <h2 class="section-title">Upload your <em>Room</em></h2>
+  <p class="section-sub">Snap a photo of your current space and let our AI analyze the layout, lighting, and potential for transformation.</p>
+  
+  <div class="upload-zone" onclick="document.getElementById('file-input').click()" id="drop-zone">
+    <div class="upload-icon">📸</div>
+    <h3>Drop your photo here</h3>
+    <p>or click to browse (JPG, PNG)</p>
+    <input type="file" id="file-input" accept="image/*">
+  </div>
+
+  <div id="preview-container">
+    <img id="preview-img" src="" alt="Preview">
+    <button class="generate-btn" id="analyze-btn" style="margin-top: 1.5rem;">Analyze Room Conditions</button>
+  </div>
+</section>
+
+<section id="analysis-section">
+  <div class="section-label">🤖 AI Room Analysis</div>
+  <h2 class="section-title">Room <em>Insights</em></h2>
+  <div class="analysis-grid">
+    <div class="analysis-card">
+      <div class="analysis-card-icon">☀️</div>
+      <h4>Lighting Score</h4>
+      <div class="analysis-score" id="score-lighting">--</div>
+      <div class="analysis-detail" id="detail-lighting">Analyzing exposure...</div>
+      <div class="progress-bar"><div class="progress-fill" id="fill-lighting"></div></div>
+    </div>
+    <div class="analysis-card">
+      <div class="analysis-card-icon">📐</div>
+      <h4>Space Utilization</h4>
+      <div class="analysis-score" id="score-space">--</div>
+      <div class="analysis-detail" id="detail-space">Mapping floorplan...</div>
+      <div class="progress-bar"><div class="progress-fill" id="fill-space"></div></div>
+    </div>
+    <div class="analysis-card">
+      <div class="analysis-card-icon">🎨</div>
+      <h4>Color Harmony</h4>
+      <div class="analysis-score" id="score-color">--</div>
+      <div class="analysis-detail" id="detail-color">Sampling palette...</div>
+      <div class="progress-bar"><div class="progress-fill" id="fill-color"></div></div>
+    </div>
+    <div class="analysis-card">
+      <div class="analysis-card-icon">🪷</div>
+      <h4>Vastu Score</h4>
+      <div class="analysis-score" id="score-vastu">--</div>
+      <div class="analysis-detail" id="detail-vastu">Checking energy...</div>
+      <div class="progress-bar"><div class="progress-fill" id="fill-vastu"></div></div>
+    </div>
+  </div>
+
+  <div class="suggestions-box">
+    <span class="suggestion-tag">AI Suggestions</span>
+    <div class="issues-list" id="suggestions-list">
+      <!-- Suggestions injected by JS -->
+    </div>
+  </div>
+  
+  <button class="generate-btn" id="to-design-btn" style="margin-top: 3rem;">Proceed to Design Styles</button>
+</section>
+
+<section id="vastu-section">
+  <div class="section-label">Traditional Wisdom</div>
+  <h2 class="section-title">Vastu <em>Compliance</em></h2>
+  <div class="vastu-score-ring">
+    <div class="vastu-score-inner">
+      <div class="vastu-score-num">82%</div>
+      <div class="vastu-score-label">Score</div>
+    </div>
+  </div>
+  <div class="vastu-grid">
+    <div class="vastu-item">
+      <div class="vastu-status" style="color: var(--green);">⬤</div>
+      <div>
+        <h4>Entrance Alignment</h4>
+        <p>Your door is in the North-East zone, attracting positive chi and abundance.</p>
+      </div>
+    </div>
+    <div class="vastu-item">
+      <div class="vastu-status" style="color: var(--gold);">⬤</div>
+      <div>
+        <h4>Furniture Setup</h4>
+        <p>Heavy seating is slightly North. Move to the South-West for grounded stability.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="design-section">
+  <div class="section-label">Design Controls</div>
+  <h2 class="section-title">Pick Your <em>Mood</em></h2>
+  <div class="design-controls">
+    <div>
+      <h4 style="margin-bottom: 1rem; font-size: 0.8rem; color: var(--gold); text-transform: uppercase;">1. Style Base</h4>
+      <div class="style-grid">
+        <div class="style-option selected"><div class="style-option-icon">🎌</div><div class="style-option-name">Japandi</div></div>
+        <div class="style-option"><div class="style-option-icon">🏺</div><div class="style-option-name">Classic</div></div>
+        <div class="style-option"><div class="style-option-icon">🧱</div><div class="style-option-name">Industrial</div></div>
+        <div class="style-option"><div class="style-option-icon">🪵</div><div class="style-option-name">Rustic</div></div>
+      </div>
+    </div>
+
+    <div>
+      <h4 style="margin-bottom: 1rem; font-size: 0.8rem; color: var(--gold); text-transform: uppercase;">2. Vibe</h4>
+      <div class="mood-row">
+        <button class="mood-pill selected">Calm & Airy</button>
+        <button class="mood-pill">Dark & Moody</button>
+        <button class="mood-pill">Vibrant & Bold</button>
+        <button class="mood-pill">Earthy & Raw</button>
+      </div>
+    </div>
+
+    <div>
+      <h4 style="margin-bottom: 1rem; font-size: 0.8rem; color: var(--gold); text-transform: uppercase;">3. Project Budget</h4>
+      <div class="budget-row">
+        <input type="range" class="budget-slider" min="500" max="50000" step="500" value="12000" id="budget-input">
+        <div class="budget-value" id="budget-display">$12,000</div>
+      </div>
+    </div>
+
+    <div>
+      <button class="voice-btn" id="voice-trigger">🎤 AI Voice Instruction</button>
+      <div class="voice-text" id="voice-display">"Add more green plants near the window..."</div>
+    </div>
+
+    <button class="generate-btn" id="generate-trigger">Redesign My Space ✨</button>
+  </div>
+</section>
+
+<section id="results-section">
+  <div class="section-label">Final Result</div>
+  <h2 class="section-title">Your <em>New</em> Home</h2>
+
+  <div class="plan-switcher">
+    <button class="plan-btn active" onclick="switchPlan('japandi')">Plan A: Japandi</button>
+    <button class="plan-btn" onclick="switchPlan('royale')">Plan B: Modern Royale</button>
+    <button class="plan-btn" onclick="switchPlan('boho')">Plan C: Boho Sanctuary</button>
+  </div>
+  
+  <div class="result-image-wrap">
+    <div class="vastu-badge" id="plan-vastu">🪷 92% Vastu Score</div>
+    <div class="compare-container" id="compare-wrap">
+      <div class="compare-after"><img id="result-img" src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&q=80&w=1200" alt="After"></div>
+      <div class="compare-before"><img src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=1200" alt="Before"></div>
+      <div class="compare-divider"></div>
+      <div class="compare-handle">↔</div>
+      <div class="compare-label before">Original</div>
+      <div class="compare-label after">AI Design</div>
+    </div>
+  </div>
+
+  <div class="cost-card">
+    <h3 id="plan-title">Plan A: Japandi Minimalist Breakdown</h3>
+    <div id="cost-breakdown">
+      <!-- Cost rows injected by JS -->
+    </div>
+    <div class="cost-total"><span class="label">Estimated Total</span><span class="price" id="total-cost">$8,500</span></div>
+    <div class="budget-badge within" id="budget-badge">✓ Within Budget</div>
+  </div>
+
+  <h4 style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--gold); text-transform: uppercase;">Shop the Inventory</h4>
+  <div class="shop-grid" id="shop-grid">
+    <!-- Shop cards injected by JS -->
+  </div>
+
+  <button class="generate-btn" style="margin-top: 3rem; background: var(--black); border: 1px solid var(--border); color: var(--white);" onclick="location.reload()">Start New Design</button>
+</section>
+
+<div class="modal-overlay" id="style-modal" onclick="if(event.target==this) closeStyleModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Explore <em>Cultural</em> Styles</h2>
+      <button class="modal-close" onclick="closeStyleModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section-title">1. Global Styles</div>
+      <div class="explore-grid">
+        <div class="explore-card active" onclick="selectStyle('scandinavian')">
+          <div class="explore-card-img-wrap"><img src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=600" class="explore-card-img"></div>
+          <div class="explore-card-info">
+            <h4>Scandinavian Zen</h4>
+            <p>Minimalist whites, light woods, and functional cozy textures.</p>
+          </div>
+        </div>
+        <div class="explore-card" onclick="selectStyle('minimalist')">
+          <div class="explore-card-img-wrap"><img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=600" class="explore-card-img"></div>
+          <div class="explore-card-info">
+            <h4>Parisian Minimal</h4>
+            <p>Monochromatic palette, ornate moldings, and classic chic.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section-title" style="margin-top: 3.5rem;">2. Indian Cultural Styles (Main USP)</div>
+      <div class="state-select-wrap">
+        <select class="state-select" id="state-selector" onchange="handleStateChange(this.value)">
+          <option value="">Select a Heritage State...</option>
+          <option value="west_bengal">West Bengal — Bengali Aesthetic</option>
+          <option value="rajasthan">Rajasthan — Royal Rajasthani</option>
+          <option value="kerala">Kerala — Traditional Kerala</option>
+          <option value="tamil_nadu">Tamil Nadu — South Indian Temple Style</option>
+          <option value="punjab">Punjab — Punjabi Heritage</option>
+          <option value="maharashtra">Maharashtra — Marathi Minimal Traditional</option>
+          <option value="gujarat">Gujarat — Vibrant Gujarati Decor</option>
+          <option value="kashmir">Kashmir — Kashmiri Wooden Interior</option>
+          <option value="assam">Assam — Assamese Bamboo Style</option>
+        </select>
+      </div>
+
+      <div class="insight-panel" id="insight-panel">
+        <span class="insight-tag">Small Cultural Insight</span>
+        <div class="insight-text" id="insight-text">
+          <!-- Insight text injected by JS -->
+        </div>
+        
+        <div class="attr-grid">
+          <div class="attr-item">
+            <div class="attr-icon">🪵</div>
+            <div class="attr-info">
+              <h5>Materials</h5>
+              <p id="attr-materials">--</p>
+            </div>
+          </div>
+          <div class="attr-item">
+            <div class="attr-icon">🎨</div>
+            <div class="attr-info">
+              <h5>Colors</h5>
+              <p id="attr-colors">--</p>
+            </div>
+          </div>
+          <div class="attr-item">
+            <div class="attr-icon">🛋️</div>
+            <div class="attr-info">
+              <h5>Furniture</h5>
+              <p id="attr-furniture">--</p>
+            </div>
+          </div>
+          <div class="attr-item">
+            <div class="attr-icon">🪔</div>
+            <div class="attr-info">
+              <h5>Decor Elements</h5>
+              <p id="attr-decor">--</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="explore-apply" onclick="applyCulture()">Apply Cultural Selection</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // UI Functionalities
+  const loading = document.getElementById('loading');
+  const uploadInput = document.getElementById('file-input');
+  
+  // 1. Mock Upload Flow
+  uploadInput.onchange = e => {
+    const file = e.target.files[0];
+    if (file) {
+      document.getElementById('preview-img').src = URL.createObjectURL(file);
+      document.getElementById('preview-container').style.display = 'block';
+      document.getElementById('drop-zone').style.display = 'none';
+      document.getElementById('upload-section').scrollIntoView({behavior:'smooth'});
+    }
+  };
+
+  document.getElementById('analyze-btn').onclick = () => {
+    showLoading("Analyzing space coordinates...", 2000, () => {
+      document.getElementById('analysis-section').style.display = 'block';
+      document.getElementById('analysis-section').scrollIntoView({behavior:'smooth'});
+      runAIAnalysis();
+    });
+  };
+
+  async function runAIAnalysis() {
+    try {
+      // Fetch scores from backend (Relative path for Vercel)
+      const resp = await fetch('/api/analyze-room', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const scores = await resp.json();
+
+      const details = {
+        lighting: "Excellent natural light from East.",
+        space: "Optimal furniture layout detected.",
+        color: "Balanced earthy wood tones.",
+        vastu: "Northeast entrance brings luck."
+      };
+
+      const suggestions = [
+        {icon: "💡", text: "Add warm lighting (2700K) to enhance timber textures."},
+        {icon: "📦", text: "Reduce clutter near windows for better air flow."},
+        {icon: "🧶", text: "Consider a silk rug to bridge the cool tones."},
+        {icon: "🪴", text: "Place a money plant in the Southeast corner."}
+      ];
+
+      Object.keys(scores).forEach(key => {
+        setTimeout(() => {
+          document.getElementById(`score-${key}`).innerText = `${scores[key]}%`;
+          document.getElementById(`fill-${key}`).style.width = `${scores[key]}%`;
+          document.getElementById(`detail-${key}`).innerText = details[key];
+        }, 500 + (Math.random() * 1000));
+      });
+
+      const sList = document.getElementById('suggestions-list');
+      sList.innerHTML = '';
+      suggestions.forEach((s, i) => {
+        setTimeout(() => {
+          const item = document.createElement('div');
+          item.className = 'issue-item';
+          item.innerHTML = `<span class="issue-icon">${s.icon}</span> ${s.text}`;
+          sList.appendChild(item);
+        }, 1500 + (i * 300));
+      });
+    } catch (err) {
+      console.error("Backend analysis failed, using local fallback.", err);
+    }
+  }
+
+  let culturalStyles = {};
+  let cultureThemeMap = {};
+
+  async function syncBackendData() {
+    try {
+      // Fetch from backend (Relative path for Vercel)
+      const resp = await fetch('/api/cultural-data');
+      const data = await resp.json();
+      culturalStyles = data.styles;
+      cultureThemeMap = data.themes;
+      console.log("✅ Backend Data Synced");
+    } catch (err) {
+      console.error("❌ Backend Offline", err);
+    }
+  }
+  syncBackendData();
+
+  let selectedStyleId = null;
+
+  function selectStyle(id) {
+    document.querySelectorAll('.explore-card').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[onclick="selectStyle('${id}')"]`).classList.add('active');
+    selectedStyleId = id;
+    document.getElementById('insight-panel').classList.remove('open');
+    document.getElementById('state-selector').value = "";
+  }
+
+  function handleStateChange(val) {
+    if (!val) {
+      document.getElementById('insight-panel').classList.remove('open');
+      return;
+    }
+    const data = culturalStyles[val];
+    selectedStyleId = val;
+
+    document.querySelectorAll('.explore-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('insight-panel').classList.add('open');
+    document.getElementById('insight-text').innerText = `“${data.insight}”`;
+    document.getElementById('attr-materials').innerText = data.materials;
+    document.getElementById('attr-colors').innerText = data.colors;
+    document.getElementById('attr-furniture').innerText = data.furniture;
+    document.getElementById('attr-decor').innerText = data.decor;
+  }
+
+  function applyCulture() {
+    if(selectedStyleId) {
+      const theme = cultureThemeMap[selectedStyleId];
+      const displayName = selectedStyleId.replace('_',' ').toUpperCase();
+      showLoading(`Applying ${displayName} palette & Heritage Assets...`, 2000, () => {
+        if(theme) {
+          document.documentElement.style.setProperty('--gold', theme.gold);
+          document.documentElement.style.setProperty('--gold-light', theme.goldLight);
+          const heroImg = document.querySelector('.hero-image img');
+          if(heroImg) {
+             heroImg.style.opacity = '0';
+             setTimeout(() => {
+               heroImg.src = theme.hero;
+               heroImg.style.opacity = '1';
+             }, 300);
+          }
+          
+          const toast = document.createElement('div');
+          toast.style = "position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:var(--gold); color:white; padding:12px 24px; border-radius:100px; font-weight:600; font-size:0.75rem; z-index:10000; box-shadow:0 10px 30px rgba(0,0,0,0.5); animation:fadeUp 0.4s cubic-bezier(0.23, 1, 0.32, 1);";
+          toast.innerText = `✨ ${displayName} STYLE APPLIED`;
+          document.body.appendChild(toast);
+          setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(20px)';
+            toast.style.transition = 'all 0.5s ease';
+            setTimeout(() => toast.remove(), 500);
+          }, 4000);
+        }
+        closeStyleModal();
+      });
+    } else {
+      closeStyleModal();
+    }
+  }
+
+  // Utils
+  function showLoading(text, time, cb) {
+    loading.classList.add('active');
+    document.getElementById('loading-text').innerText = text;
+    setTimeout(() => {
+      loading.classList.remove('active');
+      if(cb) cb();
+    }, time);
+  }
+</script>
+
+</body>
+</html>
