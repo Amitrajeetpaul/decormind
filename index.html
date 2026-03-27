@@ -944,6 +944,7 @@
     showLoading("Generating your AI sanctuary...", 3000, () => {
       document.getElementById('results-section').style.display = 'block';
       document.getElementById('results-section').scrollIntoView({behavior:'smooth'});
+      renderResults('japandi');
     });
   };
 
@@ -1109,6 +1110,122 @@
     } else {
       closeStyleModal();
     }
+  }
+
+  const plans = {
+    japandi: {
+      title: "Plan A: Japandi Minimalist",
+      vastu: 92,
+      total: 8500,
+      image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&q=80&w=1200",
+      costs: [
+        { label: "Eco-friendly Bamboo Flooring", price: 3200 },
+        { label: "Low-profile Teak Bed Frame", price: 2100 },
+        { label: "Hand-woven Tatami Mats", price: 800 },
+        { label: "Rice Paper Lighting Fixtures", price: 600 },
+        { label: "Minimalist Birch Wardrobe", price: 1800 }
+      ],
+      shop: [
+        { name: "Teak Coffee Table", price: 450, icon: "☕", source: "ZenHome" },
+        { name: "Bonsai Tree Set", price: 85, icon: "🪴", source: "Greenery" },
+        { name: "Linen Curtains", price: 120, icon: "🧶", source: "SoftTouch" }
+      ]
+    },
+    royale: {
+      title: "Plan B: Modern Royale",
+      vastu: 88,
+      total: 14200,
+      image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200",
+      costs: [
+        { label: "Premium Carrara Marble Accents", price: 5500 },
+        { label: "Velvet Tufted King Bed", price: 3800 },
+        { label: "Crystal Chandelier", price: 2200 },
+        { label: "Gold-leaf Wall Moldings", price: 1500 },
+        { label: "Silk Area Rug", price: 1200 }
+      ],
+      shop: [
+        { name: "Gold Mirror", price: 320, icon: "🪞", source: "LuxeDecor" },
+        { name: "Velvet Cushion", price: 45, icon: "💎", source: "SoftTouch" },
+        { name: "Brass Lamp", price: 180, icon: "💡", source: "Glow" }
+      ]
+    },
+    boho: {
+      title: "Plan C: Boho Sanctuary",
+      vastu: 85,
+      total: 6800,
+      image: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=1200",
+      costs: [
+        { label: "Reclaimed Wood Paneling", price: 2500 },
+        { label: "Macrame Wall Hanging", price: 350 },
+        { label: "Rattan Lounge Chair", price: 850 },
+        { label: "Handmade Ceramic Vases", price: 400 },
+        { label: "Jute Rug & Pillows", price: 2700 }
+      ],
+      shop: [
+        { name: "Rattan Basket", price: 35, icon: "🧺", source: "Earth" },
+        { name: "Hammock", price: 120, icon: "🌴", source: "Relax" },
+        { name: "Dreamcatcher", price: 25, icon: "🕸️", source: "Spirit" }
+      ]
+    }
+  };
+
+  function renderResults(planId = 'japandi') {
+    const plan = plans[planId];
+    if(!plan) return;
+
+    document.getElementById('plan-title').innerText = plan.title + " Breakdown";
+    document.getElementById('plan-vastu').innerHTML = `🪷 ${plan.vastu}% Vastu Score`;
+    
+    const resultImg = document.getElementById('result-img');
+    resultImg.style.opacity = '0';
+    setTimeout(() => {
+      resultImg.src = plan.image;
+      resultImg.style.opacity = '1';
+    }, 300);
+    
+    document.getElementById('compare-wrap').style.display = 'block';
+
+    const costBox = document.getElementById('cost-breakdown');
+    costBox.innerHTML = plan.costs.map(c => `
+      <div class="cost-row">
+        <span class="label">${c.label}</span>
+        <span class="price">$${c.price.toLocaleString()}</span>
+      </div>
+    `).join('');
+    
+    document.getElementById('total-cost').innerText = `$${plan.total.toLocaleString()}`;
+    
+    const budgetInput = document.getElementById('budget-input');
+    const budget = budgetInput ? parseInt(budgetInput.value) : 10000;
+    const badge = document.getElementById('budget-badge');
+    if (plan.total <= budget) {
+      badge.className = "budget-badge within";
+      badge.innerText = "✓ Within Budget";
+      badge.style.background = ""; badge.style.color = ""; badge.style.border = "";
+    } else {
+      badge.className = "budget-badge";
+      badge.style.background = "rgba(248,113,113,0.1)";
+      badge.style.color = "#f87171";
+      badge.style.border = "1px solid rgba(248,113,113,0.2)";
+      badge.innerText = "⚠ Over Budget";
+    }
+
+    const shopBox = document.getElementById('shop-grid');
+    shopBox.innerHTML = plan.shop.map(item => `
+      <div class="shop-card">
+        <div class="shop-card-img">${item.icon}</div>
+        <h4>${item.name}</h4>
+        <div class="shop-price">$${item.price}</div>
+        <div class="shop-source">Source: ${item.source}</div>
+        <a href="#" class="shop-btn">View Item</a>
+      </div>
+    `).join('');
+  }
+
+  window.switchPlan = function(id) {
+    document.querySelectorAll('.plan-btn').forEach(btn => btn.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    renderResults(id);
   }
 
   // Utils
